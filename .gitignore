@@ -1,0 +1,7 @@
+sim
+*.vcd
+*.AppImage
+build/
+install/
+log/
+HLS_output/
