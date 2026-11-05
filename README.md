@@ -52,15 +52,6 @@ PASS
 - **Ripple-carry** (`adder32_rca.v`): baseline built from 32 full-adder cells.
 - **Carry-lookahead** (`adder32_cla.v`): 4-bit CLA blocks with a second-level lookahead unit.
 - **Carry-select** (`adder32_csel.v`): duplicated blocks with muxed carry, trading area for speed.
-- **Carry-skip** (`adder32_cskip.v`): bypasses blocks when all propagate bits are high.
-- **Parallel-prefix** (`adder32_ks.v`, `adder32_bk.v`): Kogge-Stone (fast, large) and Brent-Kung (small, deeper), with Sklansky and Han-Carlson as further variants.
-- **Behavioral baseline**: `assign {cout, sum} = a + b + cin;` to compare against the synthesizer's own choice.
-
-### Parameterization and structure
-- Use a `WIDTH` parameter (default 32) with `generate` loops for the bit-slice and prefix stages.
-- Add a `BLOCK_SIZE` parameter for CLA, carry-select, and carry-skip.
-- Select the architecture with a parameter (`ARCH = "RCA" | "CLA" | "KS" ...`) behind one top-level wrapper, so the testbench and the Bambu-generated module share a port list.
-- Split reusable leaf cells into their own files: `full_adder.v`, `pg_gen.v`, `prefix_cell.v`, `cla_unit.v`.
 
 ### Flags and datapath features
 - Add signed overflow (`V`), negative (`N`), and zero (`Z`) outputs.
