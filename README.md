@@ -3,6 +3,7 @@
 My first Verilog project. A simple C function is converted into a hardware
 design (Verilog) using the [Bambu](https://release.bambuhls.eu) High-Level
 Synthesis tool, then verified with a testbench in Icarus Verilog.
+The design is purely combinational: no clock or reset.
 
 ## Project structure
 
@@ -43,5 +44,38 @@ PASS
 ## What I learned
 
 - How HLS turns a C function into a hardware module
+
+
+## Future Work: RTL
+
+### Adder architectures (hand-written Verilog)
+- **Ripple-carry** (`adder32_rca.v`): baseline built from 32 full-adder cells.
+- **Carry-lookahead** (`adder32_cla.v`): 4-bit CLA blocks with a second-level lookahead unit.
+- **Carry-select** (`adder32_csel.v`): duplicated blocks with muxed carry, trading area for speed.
+- **Carry-skip** (`adder32_cskip.v`): bypasses blocks when all propagate bits are high.
+- **Parallel-prefix** (`adder32_ks.v`, `adder32_bk.v`): Kogge-Stone (fast, large) and Brent-Kung (small, deeper), with Sklansky and Han-Carlson as further variants.
+- **Behavioral baseline**: `assign {cout, sum} = a + b + cin;` to compare against the synthesizer's own choice.
+
+### Parameterization and structure
+- Use a `WIDTH` parameter (default 32) with `generate` loops for the bit-slice and prefix stages.
+- Add a `BLOCK_SIZE` parameter for CLA, carry-select, and carry-skip.
+- Select the architecture with a parameter (`ARCH = "RCA" | "CLA" | "KS" ...`) behind one top-level wrapper, so the testbench and the Bambu-generated module share a port list.
+- Split reusable leaf cells into their own files: `full_adder.v`, `pg_gen.v`, `prefix_cell.v`, `cla_unit.v`.
+
+### Flags and datapath features
+- Add signed overflow (`V`), negative (`N`), and zero (`Z`) outputs.
+- Add an add/subtract mode (`sub` input that inverts `b` and sets `cin`).
+- Add saturating add, and a carry-chaining interface for multi-word addition.
+- Add an optional SIMD mode that splits the adder into 4x8 or 2x16 lanes (carry kill at lane boundaries).
+
+### Timing and pipelining
+- Add optional input and output registers with a clocked wrapper (`adder32_reg.v`).
+- Add a 2-stage and 4-stage pipelined version, with valid/ready handshaking.
+- Add a latency-matched wrapper with the same start/done interface that Bambu generates, so the two flows are drop-in replacements.
+
+### Bus and system integration
+- Wrap the adder as an AXI4-Lite or Wishbone peripheral with operand, control, and result registers.
+- Add AXI4-Stream in/out for streaming accumulation.
+- Provide a small demo top-level (switches/LEDs or UART) for an FPGA board.
 - The handshake ports Bambu generates (`clock`, `reset`, `start_port`, `done_port`)
 - Writing a self-checking testbench and simulating with Icarus Verilog
